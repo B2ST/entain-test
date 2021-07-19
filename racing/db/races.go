@@ -79,11 +79,34 @@ func (r *racesRepo) applyFilter(query string, filter *racing.ListRacesRequestFil
 		}
 	}
 
+	//adding filter for visible only
+	if filter.Visible {
+		clauses = append(clauses, "visible=?")
+		args = append(args, filter.Visible)
+	}
+	
 	if len(clauses) != 0 {
 		query += " WHERE " + strings.Join(clauses, " AND ")
 	}
 
+	//Order query
+	query += orderRacesBy(query, filter.OrderBy)
+
 	return query, args
+}
+
+func orderRacesBy(query string, orderBy string) string{
+	//make query orderd by default incase an orderBy filter isn't provided
+	 orderByStatement := "ORDER BY advertised_start_time" 
+	if orderBy != ""{
+		switch orderBy {
+			case "ASC":
+				orderByStatement += " ASC "
+			case "DESC":
+				orderByStatement += " DESC "
+		}
+	}
+	return orderByStatement
 }
 
 func (m *racesRepo) scanRaces(
@@ -95,7 +118,7 @@ func (m *racesRepo) scanRaces(
 		var race racing.Race
 		var advertisedStart time.Time
 
-		if err := rows.Scan(&race.Id, &race.MeetingId, &race.Name, &race.Number, &race.Visible, &advertisedStart); err != nil {
+		if err := rows.Scan(&race.Id, &race.MeetingId, &race.Name, &race.Number, &race.Visible, &advertisedStart, &race.Status); err != nil {
 			if err == sql.ErrNoRows {
 				return nil, nil
 			}
