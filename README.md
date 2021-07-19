@@ -86,7 +86,7 @@ Ideally, we'd like to see you push this repository up to Github/Gitlab/Bitbucket
 
    Example Payload:
 
-  ```{"filter": {"visible": true, "orderBy": "ASC"}}```
+    ```{"filter": {"visible": true, "orderBy": "ASC"}}```
 
 3. Our races require a new `status` field that is derived based on their `advertised_start_time`'s. The status is simply, `OPEN` or `CLOSED`. All races that have an `advertised_start_time` in the past should reflect `CLOSED`. 
    > There's a number of ways this could be implemented. Just have a go!
