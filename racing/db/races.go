@@ -84,12 +84,29 @@ func (r *racesRepo) applyFilter(query string, filter *racing.ListRacesRequestFil
 		clauses = append(clauses, "visible=?")
 		args = append(args, filter.Visible)
 	}
-
+	
 	if len(clauses) != 0 {
 		query += " WHERE " + strings.Join(clauses, " AND ")
 	}
 
+	//Order query
+	query += orderRacesBy(query, filter.OrderBy)
+
 	return query, args
+}
+
+func orderRacesBy(query string, orderBy string) string{
+	//make query orderd by default incase an orderBy filter isn't provided
+	 orderByStatement := "ORDER BY advertised_start_time" 
+	if orderBy != ""{
+		switch orderBy {
+			case "ASC":
+				orderByStatement += " ASC "
+			case "DESC":
+				orderByStatement += " DESC "
+		}
+	}
+	return orderByStatement
 }
 
 func (m *racesRepo) scanRaces(
