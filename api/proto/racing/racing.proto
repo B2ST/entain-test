@@ -11,6 +11,12 @@ service Racing {
   rpc ListRaces(ListRacesRequest) returns (ListRacesResponse) {
     option (google.api.http) = { post: "/v1/list-races", body: "*" };
   }
+
+  rpc GetRace(ListRacesRequest) returns (ListRacesResponse) {
+    option (google.api.http) = { post: "/v1/races"};
+  }
+
+  
 }
 
 /* Requests/Responses */

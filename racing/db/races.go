@@ -2,11 +2,12 @@ package db
 
 import (
 	"database/sql"
-	"github.com/golang/protobuf/ptypes"
-	_ "github.com/mattn/go-sqlite3"
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/golang/protobuf/ptypes"
+	_ "github.com/mattn/go-sqlite3"
 
 	"git.neds.sh/matty/entain/racing/proto/racing"
 )
@@ -18,6 +19,8 @@ type RacesRepo interface {
 
 	// List will return a list of races.
 	List(filter *racing.ListRacesRequestFilter) ([]*racing.Race, error)
+
+	GetRace(filter *racing.ListRacesRequestFilter) ([]*racing.Race, error)
 }
 
 type racesRepo struct {
@@ -61,6 +64,25 @@ func (r *racesRepo) List(filter *racing.ListRacesRequestFilter) ([]*racing.Race,
 	return r.scanRaces(rows)
 }
 
+func (r *racesRepo) GetRace(filter *racing.ListRacesRequestFilter) ([]*racing.Race, error) {
+	var (
+		err   error
+		query string
+		args  []interface{}
+	)
+
+	query = getRaceQueries()[racesList]
+
+	query, args = r.applyFilter(query, filter)
+
+	rows, err := r.db.Query(query, args...)
+	if err != nil {
+		return nil, err
+	}
+
+	return r.scanRaces(rows)
+}
+
 func (r *racesRepo) applyFilter(query string, filter *racing.ListRacesRequestFilter) (string, []interface{}) {
 	var (
 		clauses []string
@@ -84,7 +106,7 @@ func (r *racesRepo) applyFilter(query string, filter *racing.ListRacesRequestFil
 		clauses = append(clauses, "visible=?")
 		args = append(args, filter.Visible)
 	}
-	
+
 	if len(clauses) != 0 {
 		query += " WHERE " + strings.Join(clauses, " AND ")
 	}
@@ -95,15 +117,15 @@ func (r *racesRepo) applyFilter(query string, filter *racing.ListRacesRequestFil
 	return query, args
 }
 
-func orderRacesBy(query string, orderBy string) string{
+func orderRacesBy(query string, orderBy string) string {
 	//make query orderd by default incase an orderBy filter isn't provided
-	 orderByStatement := "ORDER BY advertised_start_time" 
-	if orderBy != ""{
+	orderByStatement := "ORDER BY advertised_start_time"
+	if orderBy != "" {
 		switch orderBy {
-			case "ASC":
-				orderByStatement += " ASC "
-			case "DESC":
-				orderByStatement += " DESC "
+		case "ASC":
+			orderByStatement += " ASC "
+		case "DESC":
+			orderByStatement += " DESC "
 		}
 	}
 	return orderByStatement
