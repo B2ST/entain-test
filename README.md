@@ -92,6 +92,11 @@ Ideally, we'd like to see you push this repository up to Github/Gitlab/Bitbucket
    > There's a number of ways this could be implemented. Just have a go!
 4. Introduce a new RPC, that allows us to fetch a single race by its ID.
    > This link here might help you on your way: https://cloud.google.com/apis/design/standard_methods#get
+
+   Example Request:
+
+   ```http://localhost:8000/v1/races/{id}```
+   
 5. Create a `sports` service that for sake of simplicity, implements a similar API to racing. This sports API can be called `ListEvents`. We'll leave it up to you to determine what you might think a sports event is made up off, but it should at minimum have an `id`, a `name` and an `advertised_start_time`.
 
 > Note: this should be a separate service, not bolted onto the existing racing service. At an extremely high-level, the diagram below attempts to provide a visual representation showing the separation of services needed and flow of requests.
