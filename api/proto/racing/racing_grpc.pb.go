@@ -20,7 +20,8 @@ const _ = grpc.SupportPackageIsVersion7
 type RacingClient interface {
 	// ListRaces returns a list of all races.
 	ListRaces(ctx context.Context, in *ListRacesRequest, opts ...grpc.CallOption) (*ListRacesResponse, error)
-	GetRace(ctx context.Context, in *ListRacesRequest, opts ...grpc.CallOption) (*ListRacesResponse, error)
+	// GetRace returns a single race by its respective id
+	GetRace(ctx context.Context, in *GetRaceRequest, opts ...grpc.CallOption) (*GetRaceResponse, error)
 }
 
 type racingClient struct {
@@ -40,8 +41,8 @@ func (c *racingClient) ListRaces(ctx context.Context, in *ListRacesRequest, opts
 	return out, nil
 }
 
-func (c *racingClient) GetRace(ctx context.Context, in *ListRacesRequest, opts ...grpc.CallOption) (*ListRacesResponse, error) {
-	out := new(ListRacesResponse)
+func (c *racingClient) GetRace(ctx context.Context, in *GetRaceRequest, opts ...grpc.CallOption) (*GetRaceResponse, error) {
+	out := new(GetRaceResponse)
 	err := c.cc.Invoke(ctx, "/racing.Racing/GetRace", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -55,7 +56,8 @@ func (c *racingClient) GetRace(ctx context.Context, in *ListRacesRequest, opts .
 type RacingServer interface {
 	// ListRaces returns a list of all races.
 	ListRaces(context.Context, *ListRacesRequest) (*ListRacesResponse, error)
-	GetRace(context.Context, *ListRacesRequest) (*ListRacesResponse, error)
+	// GetRace returns a single race by its respective id
+	GetRace(context.Context, *GetRaceRequest) (*GetRaceResponse, error)
 	mustEmbedUnimplementedRacingServer()
 }
 
@@ -66,7 +68,7 @@ type UnimplementedRacingServer struct {
 func (UnimplementedRacingServer) ListRaces(context.Context, *ListRacesRequest) (*ListRacesResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ListRaces not implemented")
 }
-func (UnimplementedRacingServer) GetRace(context.Context, *ListRacesRequest) (*ListRacesResponse, error) {
+func (UnimplementedRacingServer) GetRace(context.Context, *GetRaceRequest) (*GetRaceResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetRace not implemented")
 }
 func (UnimplementedRacingServer) mustEmbedUnimplementedRacingServer() {}
@@ -101,7 +103,7 @@ func _Racing_ListRaces_Handler(srv interface{}, ctx context.Context, dec func(in
 }
 
 func _Racing_GetRace_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(ListRacesRequest)
+	in := new(GetRaceRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -113,7 +115,7 @@ func _Racing_GetRace_Handler(srv interface{}, ctx context.Context, dec func(inte
 		FullMethod: "/racing.Racing/GetRace",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(RacingServer).GetRace(ctx, req.(*ListRacesRequest))
+		return srv.(RacingServer).GetRace(ctx, req.(*GetRaceRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }

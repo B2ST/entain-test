@@ -20,7 +20,8 @@ type RacesRepo interface {
 	// List will return a list of races.
 	List(filter *racing.ListRacesRequestFilter) ([]*racing.Race, error)
 
-	GetRace(filter *racing.ListRacesRequestFilter) ([]*racing.Race, error)
+	// GetRace returns a single race by its respective id
+	GetRace(filter *racing.GetRaceRequest) (*racing.Race, error)
 }
 
 type racesRepo struct {
@@ -64,7 +65,7 @@ func (r *racesRepo) List(filter *racing.ListRacesRequestFilter) ([]*racing.Race,
 	return r.scanRaces(rows)
 }
 
-func (r *racesRepo) GetRace(filter *racing.ListRacesRequestFilter) ([]*racing.Race, error) {
+func (r *racesRepo) GetRace(filter *racing.GetRaceRequest) (*racing.Race, error) {
 	var (
 		err   error
 		query string
@@ -73,14 +74,18 @@ func (r *racesRepo) GetRace(filter *racing.ListRacesRequestFilter) ([]*racing.Ra
 
 	query = getRaceQueries()[racesList]
 
-	query, args = r.applyFilter(query, filter)
+	// new filter function to get a single race from id provided
+	query, args = r.applyFilterGetRace(query, filter)
 
 	rows, err := r.db.Query(query, args...)
 	if err != nil {
 		return nil, err
 	}
 
-	return r.scanRaces(rows)
+	race, err := r.scanRaces(rows)
+
+	//return first element which is the single race, given the id provided
+	return race[0], err
 }
 
 func (r *racesRepo) applyFilter(query string, filter *racing.ListRacesRequestFilter) (string, []interface{}) {
@@ -113,6 +118,27 @@ func (r *racesRepo) applyFilter(query string, filter *racing.ListRacesRequestFil
 
 	//Order query
 	query += orderRacesBy(query, filter.OrderBy)
+
+	return query, args
+}
+
+func (r *racesRepo) applyFilterGetRace(query string, filter *racing.GetRaceRequest) (string, []interface{}) {
+	var (
+		clauses []string
+		args    []interface{}
+	)
+
+	if filter == nil {
+		return query, args
+	}
+
+	// add id=id to where clause in sql query
+	clauses = append(clauses, "id=?")
+	args = append(args, filter.Id)
+
+	if len(clauses) != 0 {
+		query += " WHERE " + strings.Join(clauses, " AND ")
+	}
 
 	return query, args
 }
